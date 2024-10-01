@@ -1,0 +1,18 @@
+{
+  "name": "chapter-3-express",
+  "version": "1.0.0",
+  "main": "app.js",
+  "scripts": {
+    "dev": "nodemon server/app"
+  },
+  "keywords": [],
+  "author": "Muhammad Fatihul Iqmal",
+  "license": "ISC",
+  "description": "Restful API",
+  "dependencies": {
+    "express": "^4.21.0"
+  },
+  "devDependencies": {
+    "nodemon": "^3.1.7"
+  }
+}
