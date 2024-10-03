@@ -45,7 +45,7 @@ app.get("/api/v1/cars", async (req, res) => {
   }
 });
 
-app.get("/api/v1/detail-car/:id", async (req, res) => {
+app.get("/api/v1/cars/:id", async (req, res) => {
   const idCars = req.params.id;
   try {
     const cars = await script.getJSON("cars.json");
@@ -54,8 +54,9 @@ app.get("/api/v1/detail-car/:id", async (req, res) => {
       status: "Succeed",
       message: "Successfully obtained cars data",
       isSuccess: true,
+      id: idCars,
       data: {
-        detailCar,
+        car: detailCar,
       },
     });
   } catch (error) {
@@ -75,8 +76,10 @@ app.post("/api/v1/cars", async (req, res) => {
   const newCar = req.body;
   try {
     let cars = await script.getJSON("cars.json");
-    // adding new car
-    cars.push(newCar);
+    // Adding new car data array to cars
+    newCar.forEach((car) => {
+      cars.push(car);
+    });
     // data must to be typeBuffer, string, etc. Not JSON
     cars = JSON.stringify(cars);
     // write content in file
@@ -87,14 +90,14 @@ app.post("/api/v1/cars", async (req, res) => {
       message: "Successfully added new car data",
       isSuccess: true,
       data: {
-        car: newCar,
+        cars: newCar,
       },
     });
   } catch (error) {
     console.error(error);
     res.status(500).json({
       status: "Failed",
-      message: "Failed to add new car data",
+      message: "Failed to add new cars data, make sure the body send an array",
       isSuccess: false,
       data: null,
     });
@@ -118,6 +121,7 @@ app.use((req, res, next) => {
     message: "Page not found",
     isSuccess: false,
   });
+  // Go to the next middleware
   next();
 });
 
