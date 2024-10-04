@@ -1,6 +1,5 @@
 const express = require("express");
 const script = require("../script/script");
-const fs = require("fs");
 const app = express();
 const port = 3000;
 
@@ -45,20 +44,31 @@ app.get("/api/v1/cars", async (req, res) => {
   }
 });
 
+// get car detail
 app.get("/api/v1/cars/:id", async (req, res) => {
-  const idCars = req.params.id;
+  const idCar = req.params.id;
   try {
     const cars = await script.getJSON("cars.json");
-    const detailCar = cars[idCars];
-    res.status(200).json({
-      status: "Succeed",
-      message: "Successfully obtained cars data",
-      isSuccess: true,
-      id: idCars,
-      data: {
-        car: detailCar,
-      },
-    });
+    // Find idCar in cars array
+    const detailCar = cars.find((obj) => obj.id === idCar);
+    if (!detailCar) {
+      res.status(404).json({
+        status: "Failed",
+        message: "ID car not found",
+        isSuccess: false,
+        data: null,
+      });
+    } else {
+      res.status(200).json({
+        status: "Succeed",
+        message: "Successfully obtained cars data",
+        isSuccess: true,
+        id: idCar,
+        data: {
+          car: detailCar,
+        },
+      });
+    }
   } catch (error) {
     console.error(error);
     res.status(500).json({
@@ -71,7 +81,6 @@ app.get("/api/v1/cars/:id", async (req, res) => {
 });
 
 // POST/ Method
-
 app.post("/api/v1/cars", async (req, res) => {
   const newCar = req.body;
   try {
@@ -106,12 +115,52 @@ app.post("/api/v1/cars", async (req, res) => {
 
 // PUT/ Method
 app.put("/api/v1/cars/:id", (req, res) => {
-  const idCars = req.params.id;
+  const idCar = req.params.id;
 });
 
 // DELETE/ method
-app.delete("/api/v1/cars/:id", (req, res) => {
-  const idCars = req.params.id;
+app.delete("/api/v1/cars/:id", async (req, res) => {
+  const idCar = req.params.id;
+  let deletedCar;
+  try {
+    const cars = await script.getJSON("cars.json");
+    // Find idCar in cars array
+    deletedCar = cars.find((obj) => obj.id === idCar);
+    if (!deletedCar) {
+      res.status(404).json({
+        status: "Failed",
+        message: "ID car is not found",
+        isSuccess: false,
+        data: null,
+      });
+    } else {
+      // Find index of car data object
+      const indexObj = cars.findIndex((obj) => obj == deletedCar);
+      // Delete car data by index arrays
+      cars.splice(indexObj, 1);
+
+      script.writeFile("./data/cars.json", JSON.stringify(cars));
+
+      res.status(200).json({
+        status: "Succeed",
+        message: "Successfully delete car data",
+        isSuccess: true,
+        id: idCar,
+        data: {
+          car: deletedCar,
+        },
+      });
+    }
+  } catch (error) {
+    console.error(error);
+
+    res.status(500).json({
+      status: "Failed",
+      message: "Failed to delete car data",
+      isSuccess: false,
+      data: null,
+    });
+  }
 });
 
 // Middleware to handle page not found
