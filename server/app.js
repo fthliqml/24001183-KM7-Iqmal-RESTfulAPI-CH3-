@@ -54,7 +54,7 @@ app.get("/api/v1/cars/:id", async (req, res) => {
     if (!detailCar) {
       res.status(404).json({
         status: "Failed",
-        message: "ID car not found",
+        message: "Can't find spesific id car",
         isSuccess: false,
         data: null,
       });
@@ -113,9 +113,51 @@ app.post("/api/v1/cars", async (req, res) => {
   }
 });
 
-// PUT/ Method
-app.put("/api/v1/cars/:id", (req, res) => {
+// PUT/ Method : client changing the whole resource
+// PATCH/ Method : client changing partial data without changing the whole data
+
+app.patch("/api/v1/cars/:id", async (req, res) => {
+  const cars = await script.getJSON("cars.json");
   const idCar = req.params.id;
+  const newDataCar = req.body;
+
+  try {
+    // get data index in cars array
+    const carIndex = cars.findIndex((object) => object.id == idCar);
+
+    if (carIndex == -1) {
+      return res.status(500).json({
+        status: "Failed",
+        message: "Can't find spesific id car",
+        isSuccess: false,
+        data: null,
+      });
+    }
+
+    // merge object with spread operator
+    cars[carIndex] = { ...cars[carIndex], ...newDataCar };
+
+    // updated json
+    script.writeFile("./data/cars.json", JSON.stringify(cars));
+
+    // get car object by index
+    const car = cars.find((object) => object == cars[carIndex]);
+
+    res.status(200).json({
+      status: "Succeed",
+      message: "Successfully delete car data",
+      isSuccess: true,
+      data: { car },
+    });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({
+      status: "Failed",
+      message: "Failed to update car data",
+      isSuccess: false,
+      data: null,
+    });
+  }
 });
 
 // DELETE/ method
